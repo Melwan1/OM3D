@@ -476,8 +476,7 @@ struct RendererState
             state.lit_hdr_texture =
                 Texture(size, ImageFormat::RGBA16_FLOAT, WrapMode::Clamp);
             state.shadow_depth_texture =
-                Texture(glm::uvec2(2048, 2048), ImageFormat::Depth32_FLOAT,
-                        WrapMode::Clamp);
+                Texture(size, ImageFormat::Depth32_FLOAT, WrapMode::Clamp);
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.shadow_depth_framebuffer =
                 Framebuffer(&state.shadow_depth_texture);
@@ -574,7 +573,7 @@ int main(int argc, char **argv)
                 }
                 {
                     PROFILE_GPU("Shadow Pass");
-                    renderer.shadow_depth_framebuffer.bind(true, false);
+                    renderer.depth_framebuffer.bind(true, false);
                     scene->render(PassType::SHADOW);
                 }
                 {
@@ -587,7 +586,7 @@ int main(int argc, char **argv)
             {
                 {
                     PROFILE_GPU("Shadow Pass");
-                    renderer.shadow_depth_framebuffer.bind(true, false);
+                    renderer.depth_framebuffer.bind(true, false);
                     scene->render(PassType::SHADOW_NO_DEPTH);
                 }
                 {

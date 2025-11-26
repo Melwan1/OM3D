@@ -1,4 +1,5 @@
 #include <TypedBuffer.h>
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <shader_structs.h>
 
@@ -89,21 +90,23 @@ namespace OM3D
             (void)average_position;
             (void)scene_radius;
             float real_scene_radius = 10.f;
-            glm::vec3 light_position = -_sun_direction * real_scene_radius;
-            glm::vec3 light_dir = -_sun_direction;
-            _camera.set_view(glm::lookAt(light_position, light_dir,
+            glm::vec3 light_position = _sun_direction * real_scene_radius;
+            _camera.set_view(glm::lookAt(light_position,
+                                         glm::vec3(0.0, 0.0, 0.0),
                                          glm::vec3(0.0, 1.0, 0.0)));
-            _camera.set_proj(Camera::orthographic(
+            _camera.set_proj(glm::ortho(-real_scene_radius, real_scene_radius,
+                                        -real_scene_radius, real_scene_radius,
+                                        -real_scene_radius, real_scene_radius));
+            /*_camera.set_proj(Camera::orthographic(
                 -real_scene_radius, real_scene_radius, -real_scene_radius,
-                real_scene_radius, real_scene_radius * 0.01f,
-                real_scene_radius * 3.0f));
+                real_scene_radius, -real_scene_radius, real_scene_radius));*/
 
-            std::cout << "Camera position: " << _camera.position()[0] << ", "
-                      << _camera.position()[1] << ", " << _camera.position()[2]
-                      << "\n";
-            std::cout << "Scene center: " << average_position[0] << ", "
-                      << average_position[1] << ", " << average_position[2]
-                      << "\n";
+            std::cout << "Camera position: "
+                      << glm::to_string(camera().position()) << "\n";
+            std::cout << "Camera view matrix: "
+                      << glm::to_string(camera().view_matrix()) << "\n";
+            std::cout << "Camera projection matrix: "
+                      << glm::to_string(camera().projection_matrix()) << "\n";
         }
 
         // Fill and bind frame data buffer
@@ -150,8 +153,7 @@ namespace OM3D
         frustum._culling_bounding_sphere_coeff =
             _frustum_bounding_sphere_radius_coeff;
 
-        bool after_z_prepass =
-            pass_type == PassType::SHADOW || pass_type == PassType::MAIN;
+        bool after_z_prepass = pass_type == PassType::MAIN;
 
         // Render every object
 
