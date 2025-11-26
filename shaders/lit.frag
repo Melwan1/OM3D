@@ -71,7 +71,8 @@ void main() {
         acc += frame.sun_color * eval_brdf(normal, view_dir, frame.sun_dir, base_color, metallic, roughness);
 
         float shadow_coeff = get_shadow_coefficient(in_position, in_shadow, frame.shadow_camera.view_proj);
-        acc *= shadow_coeff;
+        float global_illumation_factor = 0.2;
+        acc *= (global_illumation_factor + (1 - global_illumation_factor) * shadow_coeff);
 
         for(uint i = 0; i != frame.point_light_count; ++i) {
             PointLight light = point_lights[i];
