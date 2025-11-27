@@ -48,15 +48,20 @@ namespace OM3D
         template <typename... Args>
         void set_uniform(Args &&...args) const
         {
-            _program->set_uniform(FWD(args)...);
+            _main_program->set_uniform(FWD(args)...);
+            if (_g_buffer_program)
+            {
+                _g_buffer_program->set_uniform(FWD(args)...);
+            }
         }
 
-        void bind(bool backface_culling) const;
+        void bind(bool backface_culling, bool g_buffer_pass = false) const;
 
         static Material textured_pbr_material(bool alpha_test = false);
 
     private:
-        std::shared_ptr<Program> _program;
+        std::shared_ptr<Program> _main_program;
+        std::shared_ptr<Program> _g_buffer_program;
         std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;
         std::vector<std::pair<u32, UniformValue>> _uniforms;
 

@@ -167,7 +167,7 @@ namespace OM3D
         brdf_lut().bind(5);
 
         // Render the sky
-        _sky_material.bind(false);
+        _sky_material.bind(false, pass_type == PassType::G_BUFFER);
         _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
         draw_full_screen_triangle();
 
@@ -187,7 +187,8 @@ namespace OM3D
                 if (obj.material().is_opaque())
                 {
                     obj.render(camera(), frustum, after_z_prepass,
-                               _backface_culling);
+                               _backface_culling,
+                               pass_type == PassType::G_BUFFER);
                 }
             }
 
@@ -197,7 +198,7 @@ namespace OM3D
                 if (!obj.material().is_opaque())
                 {
                     obj.render(camera(), frustum, after_z_prepass,
-                               _backface_culling);
+                               _backface_culling, false);
                 }
             }
         }

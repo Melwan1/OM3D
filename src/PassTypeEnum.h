@@ -8,6 +8,7 @@ namespace OM3D
         DEPTH = 0,
         MAIN,
         SHADOW,
+        G_BUFFER,
         MAIN_NO_DEPTH,
         SHADOW_NO_DEPTH,
     };

@@ -16,7 +16,8 @@ namespace OM3D
                     std::shared_ptr<Material> material = nullptr);
 
         void render(const Camera &camera, const Frustum &frustum,
-                    bool after_z_prepass, bool backface_culling) const;
+                    bool after_z_prepass, bool backface_culling,
+                    bool g_buffer_pass) const;
 
         const Material &material() const;
 

@@ -489,6 +489,12 @@ struct RendererState
             state.tone_mapped_texture =
                 Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp);
             state.shadow_depth_texture.activate_compare_mode(GL_GEQUAL);
+            // TP3 - Create G-Buffer textures
+            state.albedo_roughness_texture =
+                Texture(size, ImageFormat::RGBA8_sRGB, WrapMode::Clamp);
+            state.normal_metalness_texture =
+                Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp);
+            // END TP3
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.shadow_depth_framebuffer =
                 Framebuffer(&state.shadow_depth_texture);
@@ -496,6 +502,11 @@ struct RendererState
                 &state.depth_texture, std::array{ &state.lit_hdr_texture });
             state.tone_map_framebuffer =
                 Framebuffer(nullptr, std::array{ &state.tone_mapped_texture });
+            // TP3 - Create G-Buffer
+            state.g_buffer =
+                Framebuffer(&state.depth_texture,
+                            std::array{ &state.albedo_roughness_texture,
+                                        &state.normal_metalness_texture });
         }
 
         return state;
@@ -507,11 +518,14 @@ struct RendererState
     Texture shadow_depth_texture;
     Texture lit_hdr_texture;
     Texture tone_mapped_texture;
+    Texture albedo_roughness_texture;
+    Texture normal_metalness_texture;
 
     Framebuffer depth_framebuffer;
     Framebuffer shadow_depth_framebuffer;
     Framebuffer main_framebuffer;
     Framebuffer tone_map_framebuffer;
+    Framebuffer g_buffer;
 };
 
 int main(int argc, char **argv)
@@ -591,6 +605,11 @@ int main(int argc, char **argv)
                     scene->render(PassType::SHADOW);
 
                     renderer.shadow_depth_texture.bind(6);
+                }
+                {
+                    PROFILE_GPU("G-Buffer Pass");
+                    renderer.g_buffer.bind(false, false);
+                    scene->render(PassType::G_BUFFER);
                 }
                 {
                     PROFILE_GPU("Main Pass");

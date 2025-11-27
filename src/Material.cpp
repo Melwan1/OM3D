@@ -11,7 +11,7 @@ namespace OM3D
 
     void Material::set_program(std::shared_ptr<Program> prog)
     {
-        _program = std::move(prog);
+        _main_program = std::move(prog);
     }
 
     void Material::set_blend_mode(BlendMode blend)
@@ -67,7 +67,7 @@ namespace OM3D
         _uniforms.emplace_back(name_hash, std::move(value));
     }
 
-    void Material::bind(const bool backface_culling) const
+    void Material::bind(const bool backface_culling, bool g_buffer_pass) const
     {
         switch (_blend_mode)
         {
@@ -126,9 +126,23 @@ namespace OM3D
 
         for (const auto &[h, v] : _uniforms)
         {
-            _program->set_uniform(h, v);
+            if (g_buffer_pass)
+            {
+                _g_buffer_program->set_uniform(h, v);
+            }
+            else
+            {
+                _main_program->set_uniform(h, v);
+            }
         }
-        _program->bind();
+        if (g_buffer_pass)
+        {
+            _g_buffer_program->bind();
+        }
+        else
+        {
+            _main_program->bind();
+        }
     }
 
     Material Material::textured_pbr_material(bool alpha_test)
@@ -140,8 +154,15 @@ namespace OM3D
             defines.emplace_back("ALPHA_TEST");
         }
 
-        material._program =
+        material._main_program =
             Program::from_files("lit.frag", "basic.vert", defines);
+
+        std::vector<std::string> defines_with_g_buffer;
+        defines_with_g_buffer.insert(defines_with_g_buffer.end(),
+                                     defines.begin(), defines.end());
+        defines_with_g_buffer.emplace_back("G_BUFFER_RENDER");
+        material._g_buffer_program = Program::from_files(
+            "lit.frag", "basic.vert", defines_with_g_buffer);
 
         material.set_texture(0u, default_white_texture());
         material.set_texture(1u, default_normal_texture());

@@ -11,7 +11,8 @@ namespace OM3D
 
     void SceneObject::render(const Camera &camera, const Frustum &frustum,
                              const bool after_z_prepass,
-                             const bool backface_culling) const
+                             const bool backface_culling,
+                             const bool g_buffer_pass) const
     {
         if (!_material || !_mesh)
         {
@@ -25,7 +26,7 @@ namespace OM3D
         {
             _material->set_depth_test_mode(DepthTestMode::Equal);
         }
-        _material->bind(backface_culling);
+        _material->bind(backface_culling, g_buffer_pass);
         _material->set_depth_test_mode(original_depth_test_mode);
 
         _mesh->draw(camera, frustum, scale(), translation());

@@ -10,7 +10,12 @@
 // #define DEBUG_ROUGH
 // #define DEBUG_ENV
 
+#ifdef G_BUFFER_RENDER
+layout(location = 0) out vec4 albedo_roughness;
+layout(location = 1) out vec4 normal_metalness;
+#else
 layout(location = 0) out vec4 out_color;
+#endif
 
 layout(location = 0) in vec3 in_normal;
 layout(location = 1) in vec2 in_uv;
@@ -88,7 +93,12 @@ void main() {
             acc += eval_brdf(normal, view_dir, light_vec, base_color, metallic, roughness) * att * light.color;
         }
     }
+#ifdef G_BUFFER_RENDER
+    albedo_roughness = vec4(albedo_tex.rgb, roughness);
+    normal_metalness = vec4(normal * 0.5 + 0.5, metallic);
+#else
     out_color = vec4(acc, alpha);
+#endif
 
 
 #ifdef DEBUG_NORMAL
