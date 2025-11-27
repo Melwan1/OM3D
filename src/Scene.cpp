@@ -52,6 +52,11 @@ namespace OM3D
         _envmap = std::move(env);
     }
 
+    void Scene::set_ibl_intensity(float intensity)
+    {
+        _ibl_intensity = intensity;
+    }
+
     void Scene::set_sun(float altitude, float azimuth, glm::vec3 color)
     {
         // Convert from degrees to radians
@@ -136,6 +141,7 @@ namespace OM3D
             mapping[0].point_light_count = u32(_point_lights.size());
             mapping[0].sun_color = _sun_color;
             mapping[0].sun_dir = glm::normalize(_sun_direction);
+            mapping[0].ibl_intensity = _ibl_intensity;
         }
         buffer.bind(BufferUsage::Uniform, 0);
 
@@ -162,6 +168,7 @@ namespace OM3D
 
         // Render the sky
         _sky_material.bind(false);
+        _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
         draw_full_screen_triangle();
 
         Frustum frustum = camera().build_frustum();

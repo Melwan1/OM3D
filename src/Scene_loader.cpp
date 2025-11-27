@@ -479,6 +479,9 @@ namespace OM3D
             }
         }
 
+        const std::string emissive_strength_ext_name =
+            "KHR_materials_emissive_strength";
+
         for (auto [node_index, node_transform] : node_transforms)
         {
             const tinygltf::Node &node = gltf.nodes[node_index];
@@ -616,6 +619,16 @@ namespace OM3D
                                 float(gltf_mat.alphaCutoff));
                         }
 
+                        float emissive_factor = 1.0f;
+                        if (const auto it = gltf_mat.extensions.find(
+                                emissive_strength_ext_name);
+                            it != gltf_mat.extensions.end())
+                        {
+                            emissive_factor =
+                                float(it->second.Get("emissiveStrength")
+                                          .GetNumberAsDouble());
+                        }
+
                         mat->set_double_sided(gltf_mat.doubleSided);
 
                         mat->set_stored_uniform(
@@ -637,7 +650,8 @@ namespace OM3D
                             HASH("emissive_factor"),
                             glm::vec3(gltf_mat.emissiveFactor[0],
                                       gltf_mat.emissiveFactor[1],
-                                      gltf_mat.emissiveFactor[2]));
+                                      gltf_mat.emissiveFactor[2])
+                                * emissive_factor);
                     }
 
                     material = mat;
@@ -674,7 +688,7 @@ namespace OM3D
             {
                 const float intensity = glm::dot(color, glm::vec3(1.0f));
                 light.set_radius(std::sqrt(
-                    intensity * 1000.0f)); // Put radius where lum < 0.1%
+                    intensity * 100.0f)); // Put radius where lum < 0.1%
             }
             scene->add_light(light);
         }

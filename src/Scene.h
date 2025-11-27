@@ -33,6 +33,7 @@ namespace OM3D
         const Camera &camera() const;
 
         void set_envmap(std::shared_ptr<Texture> env);
+        void set_ibl_intensity(float intensity);
         void set_sun(float altitude, float azimuth,
                      glm::vec3 color = glm::vec3(1.0f));
         void set_backface_culling(bool backface_culling);
@@ -56,6 +57,7 @@ namespace OM3D
         float _frustum_bounding_sphere_radius_coeff = 1.0f;
 
         std::shared_ptr<Texture> _envmap;
+        float _ibl_intensity = 1.0f;
         Material _sky_material;
 
         Camera _camera;

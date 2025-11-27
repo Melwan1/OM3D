@@ -32,7 +32,7 @@ namespace OM3D
         void set_blend_mode(BlendMode blend);
         DepthTestMode get_depth_test_mode() const;
         void set_depth_test_mode(DepthTestMode depth);
-        void set_double_sided(bool doubleSided);
+        void set_double_sided(bool double_sided);
 
         void set_texture(u32 slot, std::shared_ptr<Texture> tex);
 
@@ -46,7 +46,7 @@ namespace OM3D
         // called on OTHER materials
 
         template <typename... Args>
-        void set_uniform(Args &&...args)
+        void set_uniform(Args &&...args) const
         {
             _program->set_uniform(FWD(args)...);
         }
@@ -63,7 +63,7 @@ namespace OM3D
         BlendMode _blend_mode = BlendMode::None;
         DepthTestMode _depth_test_mode = DepthTestMode::Standard;
 
-        bool _doubleSided = false;
+        bool _double_sided = false;
     };
 
 } // namespace OM3D

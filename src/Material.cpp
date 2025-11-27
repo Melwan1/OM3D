@@ -29,16 +29,16 @@ namespace OM3D
         _depth_test_mode = depth;
     }
 
-    void Material::set_double_sided(bool doubleSided)
+    void Material::set_double_sided(bool double_sided)
     {
-        _doubleSided = doubleSided;
+        _double_sided = double_sided;
     }
 
     void Material::set_texture(u32 slot, std::shared_ptr<Texture> tex)
     {
         if (const auto it =
                 std::find_if(_textures.begin(), _textures.end(),
-                             [&](const auto &t) { return t.second == tex; });
+                             [&](const auto &t) { return t.first == slot; });
             it != _textures.end())
         {
             it->second = std::move(tex);
@@ -146,7 +146,7 @@ namespace OM3D
         material.set_texture(0u, default_white_texture());
         material.set_texture(1u, default_normal_texture());
         material.set_texture(2u, default_metal_rough_texture());
-        material.set_texture(3u, default_black_texture());
+        material.set_texture(3u, default_white_texture());
 
         return material;
     }

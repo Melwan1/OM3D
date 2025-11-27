@@ -82,6 +82,7 @@ namespace OM3D
     const Texture &brdf_lut();
 
     void draw_full_screen_triangle();
+    void blit_to_screen(const Texture &tex);
 
     std::shared_ptr<Texture> default_black_texture();
     std::shared_ptr<Texture> default_white_texture();
