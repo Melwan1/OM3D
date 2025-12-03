@@ -5,5 +5,5 @@ layout(location = 0) in vec2 in_uv;
 layout(binding = 0) uniform sampler2D in_tex;
 
 void main() {
-out_color = texture(in_tex, in_uv);
+    out_color = texture(in_tex, in_uv);
 }

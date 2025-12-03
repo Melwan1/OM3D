@@ -167,7 +167,7 @@ namespace OM3D
         brdf_lut().bind(5);
 
         // Render the sky
-        _sky_material.bind(false, false);
+        _sky_material.bind(false);
         _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
         draw_full_screen_triangle();
 

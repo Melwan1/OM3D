@@ -9,6 +9,7 @@ namespace OM3D
         MAIN,
         SHADOW,
         G_BUFFER,
+        DEBUG,
         MAIN_NO_DEPTH,
         SHADOW_NO_DEPTH,
     };

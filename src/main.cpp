@@ -13,6 +13,8 @@
 #include <iostream>
 #include <vector>
 
+#include "DebugModeEnum.h"
+
 using namespace OM3D;
 
 static float delta_time = 0.0f;
@@ -21,6 +23,8 @@ static float sun_azimuth = 45.0f;
 static float sun_intensity = 7.0f;
 static float ibl_intensity = 1.0f;
 static float exposure = 0.33f;
+
+static DebugMode debug_mode = DebugMode::DEBUG_NONE;
 
 static bool backface_culling = true;
 static bool frustum_culling = true;
@@ -260,6 +264,17 @@ void gui(ImGuiRenderer &imgui)
             }
             ImGui::EndMenu();
         }
+#ifdef OM3D_DEBUG
+        if (ImGui::BeginMenu("Debug"))
+        {
+            static int SelectedDebugitem = 0;
+            ImGui::Combo("Debug Mode", &SelectedDebugitem, debug_mode_items,
+                         IM_ARRAYSIZE(debug_mode_items));
+            debug_mode = static_cast<DebugMode>(SelectedDebugitem);
+
+            ImGui::EndMenu();
+        }
+#endif
 
         if (ImGui::BeginMenu("Lighting"))
         {
@@ -558,6 +573,7 @@ int main(int argc, char **argv)
     load_default_scene();
 
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
+    auto debug_program = Program::from_files("debug.frag", "screen.vert");
     RendererState renderer;
 
     for (;;)
@@ -608,12 +624,30 @@ int main(int argc, char **argv)
                 }
                 {
                     PROFILE_GPU("G-Buffer Pass");
-                    renderer.g_buffer.bind(false, false);
+                    renderer.g_buffer.bind(false, true);
                     scene->render(PassType::G_BUFFER);
                 }
+                if (debug_mode != DebugMode::DEBUG_NONE)
+                {
+                    PROFILE_GPU("Debug Pass");
+                    renderer.main_framebuffer.bind(false, true);
+
+                    std::vector<std::string> defines_debug;
+                    defines_debug.emplace_back(
+                        debug_mode_to_string(debug_mode));
+                    debug_program = Program::from_files(
+                        "debug.frag", "screen.vert", defines_debug);
+                    debug_program->bind();
+
+                    renderer.albedo_roughness_texture.bind(0);
+                    renderer.normal_metalness_texture.bind(1);
+
+                    draw_full_screen_triangle();
+                }
+                else
                 {
                     PROFILE_GPU("Main Pass");
-                    renderer.main_framebuffer.bind(false, false);
+                    renderer.main_framebuffer.bind(false, true);
                     scene->render(PassType::MAIN);
                 }
             }
