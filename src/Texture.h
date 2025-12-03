@@ -5,6 +5,7 @@
 #include <glm/vec2.hpp>
 #include <graphics.h>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "glad/gl.h"
@@ -31,15 +32,22 @@ namespace OM3D
     {
     public:
         Texture() = default;
+        Texture(const std::string &name)
+            : Texture()
+        {
+            _name = name;
+        }
 
         Texture(Texture &&) = default;
         Texture &operator=(Texture &&) = default;
 
         ~Texture();
 
+        std::optional<std::string> get_name();
+
         Texture(const TextureData &data);
 
-        Texture(const glm::uvec2 &size, ImageFormat format, WrapMode wrap);
+        Texture(const glm::uvec2 &size, ImageFormat format, WrapMode wrap, std::optional<std::string> name = std::nullopt);
 
         static Texture empty_cubemap(u32 size, ImageFormat format,
                                      u32 mipmaps = 1);
@@ -69,6 +77,7 @@ namespace OM3D
         ImageFormat _format;
 
         u32 _texture_type = {};
+        std::optional<std::string> _name = std::nullopt;
     };
 
 } // namespace OM3D

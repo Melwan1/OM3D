@@ -495,28 +495,33 @@ struct RendererState
         if (state.size.x > 0 && state.size.y > 0)
         {
             state.depth_texture =
-                Texture(size, ImageFormat::Depth32_FLOAT, WrapMode::Clamp);
+                Texture(size, ImageFormat::Depth32_FLOAT, WrapMode::Clamp,
+                        state.depth_texture.get_name());
             state.lit_hdr_texture =
-                Texture(size, ImageFormat::RGBA16_FLOAT, WrapMode::Clamp);
+                Texture(size, ImageFormat::RGBA16_FLOAT, WrapMode::Clamp,
+                        state.lit_hdr_texture.get_name());
             state.shadow_depth_texture =
                 Texture(glm::uvec2(2048, 2048), ImageFormat::Depth32_FLOAT,
-                        WrapMode::Clamp);
+                        WrapMode::Clamp, state.shadow_depth_texture.get_name());
             state.tone_mapped_texture =
-                Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp);
+                Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp,
+                        state.tone_mapped_texture.get_name());
             state.shadow_depth_texture.activate_compare_mode(GL_GEQUAL);
             // TP3 - Create G-Buffer textures
             state.albedo_roughness_texture =
-                Texture(size, ImageFormat::RGBA8_sRGB, WrapMode::Clamp);
+                Texture(size, ImageFormat::RGBA8_sRGB, WrapMode::Clamp,
+                        state.albedo_roughness_texture.get_name());
             state.normal_metalness_texture =
-                Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp);
+                Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp,
+                        state.normal_metalness_texture.get_name());
             // END TP3
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.shadow_depth_framebuffer =
                 Framebuffer(&state.shadow_depth_texture);
             state.main_framebuffer = Framebuffer(
                 &state.depth_texture, std::array{ &state.lit_hdr_texture });
-            state.debug_framebuffer = Framebuffer(
-                nullptr, std::array{ &state.lit_hdr_texture });
+            state.debug_framebuffer =
+                Framebuffer(nullptr, std::array{ &state.lit_hdr_texture });
             state.tone_map_framebuffer =
                 Framebuffer(nullptr, std::array{ &state.tone_mapped_texture });
             // TP3 - Create G-Buffer
@@ -531,12 +536,12 @@ struct RendererState
 
     glm::uvec2 size = {};
 
-    Texture depth_texture;
-    Texture shadow_depth_texture;
-    Texture lit_hdr_texture;
-    Texture tone_mapped_texture;
-    Texture albedo_roughness_texture;
-    Texture normal_metalness_texture;
+    Texture depth_texture = Texture("Depth Texture");
+    Texture shadow_depth_texture = Texture("Shadow Depth Texture");
+    Texture lit_hdr_texture = Texture("Lit HDR Texture");
+    Texture tone_mapped_texture = Texture("Tone Mapped Texture");
+    Texture albedo_roughness_texture = Texture("Albedo Roughness Texture");
+    Texture normal_metalness_texture = Texture("Normal Metalness Texture");
 
     Framebuffer depth_framebuffer;
     Framebuffer shadow_depth_framebuffer;

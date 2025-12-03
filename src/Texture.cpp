@@ -64,11 +64,13 @@ namespace OM3D
         }
     }
 
-    Texture::Texture(const glm::uvec2 &size, ImageFormat format, WrapMode wrap)
+    Texture::Texture(const glm::uvec2 &size, ImageFormat format, WrapMode wrap,
+                     const std::optional<std::string> name)
         : _handle(create_texture_handle(GL_TEXTURE_2D))
         , _size(size)
         , _format(format)
         , _texture_type(GL_TEXTURE_2D)
+        , _name(name)
     {
         const ImageFormatGL gl_format = image_format_to_gl(_format);
         glTextureStorage2D(_handle.get(), 1, gl_format.internal_format, _size.x,
@@ -84,6 +86,12 @@ namespace OM3D
         {
             _bindless = glGetTextureHandleARB(_handle.get());
             glMakeTextureHandleResidentARB(_bindless);
+        }
+
+        if (_name.has_value())
+        {
+            // apply the name, -1 means NULL terminated
+            glObjectLabel(GL_TEXTURE, _handle.get(), -1, _name.value().c_str());
         }
     }
 
@@ -146,6 +154,11 @@ namespace OM3D
         }
     }
 
+    std::optional<std::string> Texture::get_name()
+    {
+        return _name;
+    }
+
     bool Texture::is_null() const
     {
         return !_handle.is_valid();
@@ -188,8 +201,10 @@ namespace OM3D
 
     void Texture::activate_compare_mode(const GLint compare_function) const
     {
-        glTextureParameteri(_handle.get(),GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-        glTextureParameteri(_handle.get(),GL_TEXTURE_COMPARE_FUNC, compare_function);
+        glTextureParameteri(_handle.get(), GL_TEXTURE_COMPARE_MODE,
+                            GL_COMPARE_REF_TO_TEXTURE);
+        glTextureParameteri(_handle.get(), GL_TEXTURE_COMPARE_FUNC,
+                            compare_function);
     }
 
 } // namespace OM3D
