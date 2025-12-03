@@ -28,7 +28,8 @@ namespace OM3D
     public:
         Material();
 
-        void set_program(std::shared_ptr<Program> prog);
+        void set_main_program(std::shared_ptr<Program> prog);
+        void set_g_buffer_program(std::shared_ptr<Program> prog);
         void set_blend_mode(BlendMode blend);
         DepthTestMode get_depth_test_mode() const;
         void set_depth_test_mode(DepthTestMode depth);

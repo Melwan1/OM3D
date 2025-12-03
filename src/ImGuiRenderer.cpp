@@ -314,7 +314,8 @@ namespace OM3D
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
-        _material.set_program(Program::from_files("imgui.frag", "imgui.vert"));
+        _material.set_main_program(Program::from_files("imgui.frag", "imgui.vert"));
+        _material.set_g_buffer_program(Program::from_files("passthrough.frag", "imgui.vert"));
         _material.set_depth_test_mode(DepthTestMode::None);
         _material.set_blend_mode(BlendMode::Alpha);
 

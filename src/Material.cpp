@@ -1,7 +1,7 @@
+#include "Material.h"
+
 #include <algorithm>
 #include <glad/gl.h>
-
-#include "Material.h"
 
 namespace OM3D
 {
@@ -9,9 +9,14 @@ namespace OM3D
     Material::Material()
     {}
 
-    void Material::set_program(std::shared_ptr<Program> prog)
+    void Material::set_main_program(std::shared_ptr<Program> prog)
     {
         _main_program = std::move(prog);
+    }
+
+    void Material::set_g_buffer_program(std::shared_ptr<Program> prog)
+    {
+        _g_buffer_program = std::move(prog);
     }
 
     void Material::set_blend_mode(BlendMode blend)

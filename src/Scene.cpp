@@ -9,7 +9,7 @@ namespace OM3D
 
     Scene::Scene()
     {
-        _sky_material.set_program(
+        _sky_material.set_main_program(
             Program::from_files("sky.frag", "screen.vert"));
         _sky_material.set_depth_test_mode(DepthTestMode::None);
 
@@ -167,7 +167,7 @@ namespace OM3D
         brdf_lut().bind(5);
 
         // Render the sky
-        _sky_material.bind(false, pass_type == PassType::G_BUFFER);
+        _sky_material.bind(false, false);
         _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
         draw_full_screen_triangle();
 
