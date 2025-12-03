@@ -4,6 +4,7 @@ layout(location = 0) in vec2 in_uv;
 
 layout(binding = 0) uniform sampler2D in_albedo_roughness;
 layout(binding = 1) uniform sampler2D in_normal_metal;
+layout(binding = 2) uniform sampler2D in_depth;
 
 layout(location = 0) out vec4 out_color;
 
@@ -33,7 +34,8 @@ void main() {
     #endif
 
     #ifdef DEBUG_DEPTH
-    float color = pow(gl_FragDepth, 0.35);
-    out_color = vec4(vec3(color), 1.0);
+    float depth = texture(in_depth, in_uv).r;
+    depth = pow(depth, 0.35);
+    out_color = vec4(vec3(depth), 1.0);
     #endif
 }

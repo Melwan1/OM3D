@@ -515,6 +515,8 @@ struct RendererState
                 Framebuffer(&state.shadow_depth_texture);
             state.main_framebuffer = Framebuffer(
                 &state.depth_texture, std::array{ &state.lit_hdr_texture });
+            state.debug_framebuffer = Framebuffer(
+                nullptr, std::array{ &state.lit_hdr_texture });
             state.tone_map_framebuffer =
                 Framebuffer(nullptr, std::array{ &state.tone_mapped_texture });
             // TP3 - Create G-Buffer
@@ -538,6 +540,7 @@ struct RendererState
 
     Framebuffer depth_framebuffer;
     Framebuffer shadow_depth_framebuffer;
+    Framebuffer debug_framebuffer;
     Framebuffer main_framebuffer;
     Framebuffer tone_map_framebuffer;
     Framebuffer g_buffer;
@@ -630,7 +633,7 @@ int main(int argc, char **argv)
                 if (debug_mode != DebugMode::DEBUG_NONE)
                 {
                     PROFILE_GPU("Debug Pass");
-                    renderer.main_framebuffer.bind(false, true);
+                    renderer.debug_framebuffer.bind(false, true);
 
                     std::vector<std::string> defines_debug;
                     defines_debug.emplace_back(
@@ -641,6 +644,7 @@ int main(int argc, char **argv)
 
                     renderer.albedo_roughness_texture.bind(0);
                     renderer.normal_metalness_texture.bind(1);
+                    renderer.depth_texture.bind(2);
 
                     draw_full_screen_triangle();
                 }
