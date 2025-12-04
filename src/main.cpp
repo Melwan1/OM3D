@@ -503,10 +503,12 @@ struct RendererState
             state.shadow_depth_texture =
                 Texture(glm::uvec2(2048, 2048), ImageFormat::Depth32_FLOAT,
                         WrapMode::Clamp, state.shadow_depth_texture.get_name());
+            state.shadow_depth_texture.activate_compare_mode(GL_GEQUAL);
+
             state.tone_mapped_texture =
                 Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp,
                         state.tone_mapped_texture.get_name());
-            state.shadow_depth_texture.activate_compare_mode(GL_GEQUAL);
+
             // TP3 - Create G-Buffer textures
             state.albedo_roughness_texture =
                 Texture(size, ImageFormat::RGBA8_sRGB, WrapMode::Clamp,
@@ -515,13 +517,21 @@ struct RendererState
                 Texture(size, ImageFormat::RGBA8_UNORM, WrapMode::Clamp,
                         state.normal_metalness_texture.get_name());
             // END TP3
+            state.mask_light_depth_texture =
+                Texture(size, ImageFormat::Depth32_FLOAT, WrapMode::Clamp,
+                        state.mask_light_depth_texture.get_name());
+
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.shadow_depth_framebuffer =
                 Framebuffer(&state.shadow_depth_texture);
+            // state.main_light_mask_framebuffer =
+            //     Framebuffer(&state.depth_texture,
+            //                 std::array{ &state.mask_light_depth_texture });
+            state.main_g_buffer_framebuffer =
+                Framebuffer(&state.mask_light_depth_texture,
+                            std::array{ &state.lit_hdr_texture });
             state.main_framebuffer = Framebuffer(
                 &state.depth_texture, std::array{ &state.lit_hdr_texture });
-            state.debug_framebuffer =
-                Framebuffer(nullptr, std::array{ &state.lit_hdr_texture });
             state.tone_map_framebuffer =
                 Framebuffer(nullptr, std::array{ &state.tone_mapped_texture });
             // TP3 - Create G-Buffer
@@ -539,13 +549,15 @@ struct RendererState
     Texture depth_texture = Texture("Depth Texture");
     Texture shadow_depth_texture = Texture("Shadow Depth Texture");
     Texture lit_hdr_texture = Texture("Lit HDR Texture");
+    Texture mask_light_depth_texture = Texture("Mask Light Depth Texture");
     Texture tone_mapped_texture = Texture("Tone Mapped Texture");
     Texture albedo_roughness_texture = Texture("Albedo Roughness Texture");
     Texture normal_metalness_texture = Texture("Normal Metalness Texture");
 
     Framebuffer depth_framebuffer;
     Framebuffer shadow_depth_framebuffer;
-    Framebuffer debug_framebuffer;
+    Framebuffer main_light_mask_framebuffer;
+    Framebuffer main_g_buffer_framebuffer;
     Framebuffer main_framebuffer;
     Framebuffer tone_map_framebuffer;
     Framebuffer g_buffer;
@@ -582,6 +594,8 @@ int main(int argc, char **argv)
 
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
     auto debug_program = Program::from_files("debug.frag", "screen.vert");
+    auto main_g_buffer_program =
+        Program::from_files("g_buffer_lit.frag", "screen.vert");
     RendererState renderer;
 
     for (;;)
@@ -638,7 +652,9 @@ int main(int argc, char **argv)
                 if (debug_mode != DebugMode::DEBUG_NONE)
                 {
                     PROFILE_GPU("Debug Pass");
-                    renderer.debug_framebuffer.bind(false, true);
+                    renderer.main_framebuffer.bind(false, true);
+
+                    glDisable(GL_DEPTH_TEST);
 
                     std::vector<std::string> defines_debug;
                     defines_debug.emplace_back(
@@ -650,14 +666,42 @@ int main(int argc, char **argv)
                     renderer.albedo_roughness_texture.bind(0);
                     renderer.normal_metalness_texture.bind(1);
                     renderer.depth_texture.bind(2);
+                    renderer.shadow_depth_texture.bind(6);
 
-                    draw_full_screen_triangle();
+                    scene->render(PassType::MAIN_G_BUFFER);
                 }
                 else
                 {
-                    PROFILE_GPU("Main Pass");
-                    renderer.main_framebuffer.bind(false, true);
-                    scene->render(PassType::MAIN);
+                    // PROFILE_GPU("Main Pass Light Mask Deferred (G-Buffer)");
+                    // renderer.main_light_mask_framebuffer.bind(false, true);
+                    //
+                    // glEnable(GL_CULL_FACE);
+                    // glCullFace(GL_FRONT);
+                    // glFrontFace(GL_CCW);
+                    // glEnable(GL_DEPTH_TEST);
+                    //
+                    // main_g_buffer_program->bind();
+                    //
+                    // renderer.albedo_roughness_texture.bind(0);
+                    // renderer.normal_metalness_texture.bind(1);
+                    //
+                    // draw_full_screen_triangle();
+
+                    PROFILE_GPU("Main Pass Deferred (G-Buffer)");
+                    renderer.main_g_buffer_framebuffer.bind(false, true);
+
+                    glDisable(GL_DEPTH_TEST);
+                    main_g_buffer_program->bind();
+
+                    renderer.albedo_roughness_texture.bind(0);
+                    renderer.normal_metalness_texture.bind(1);
+                    renderer.depth_texture.bind(2);
+
+                    scene->render(PassType::MAIN_G_BUFFER);
+
+                    // PROFILE_GPU("Main Pass Forward (Transparent)");
+                    // renderer.main_framebuffer.bind(false, false);
+                    // scene->render(PassType::MAIN_TRANSPARENT);
                 }
             }
             else

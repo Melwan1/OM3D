@@ -166,6 +166,12 @@ namespace OM3D
         // Bind brdf lut needed for lighting to scene rendering shaders
         brdf_lut().bind(5);
 
+        if (pass_type == PassType::MAIN_G_BUFFER)
+        {
+            draw_full_screen_triangle();
+            return;
+        }
+
         // Render the sky
         _sky_material.bind(false);
         _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
@@ -176,19 +182,22 @@ namespace OM3D
         frustum._culling_bounding_sphere_coeff =
             _frustum_bounding_sphere_radius_coeff;
 
-        bool after_z_prepass = pass_type == PassType::MAIN;
+        bool after_z_prepass = pass_type == PassType::MAIN_G_BUFFER;
 
         // Render every object
 
         {
             // Opaque first
-            for (const SceneObject &obj : _objects)
+            if (pass_type != PassType::MAIN_TRANSPARENT)
             {
-                if (obj.material().is_opaque())
+                for (const SceneObject &obj : _objects)
                 {
-                    obj.render(camera(), frustum, after_z_prepass,
-                               _backface_culling,
-                               pass_type == PassType::G_BUFFER);
+                    if (obj.material().is_opaque())
+                    {
+                        obj.render(camera(), frustum, after_z_prepass,
+                                   _backface_culling,
+                                   pass_type == PassType::G_BUFFER);
+                    }
                 }
             }
 
