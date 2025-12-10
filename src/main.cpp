@@ -689,6 +689,7 @@ int main(int argc, char **argv)
 
                     PROFILE_GPU("Main Pass Deferred (G-Buffer)");
                     renderer.main_g_buffer_framebuffer.bind(false, true);
+                    renderer.depth_texture.deactivate_filter();
 
                     glDisable(GL_DEPTH_TEST);
                     main_g_buffer_program->bind();

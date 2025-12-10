@@ -1,8 +1,7 @@
-#include "Texture.h"
-
 #include <glad/gl.h>
 
 #include "Program.h"
+#include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <algorithm>
@@ -205,6 +204,12 @@ namespace OM3D
                             GL_COMPARE_REF_TO_TEXTURE);
         glTextureParameteri(_handle.get(), GL_TEXTURE_COMPARE_FUNC,
                             compare_function);
+    }
+
+    void Texture::deactivate_filter() const
+    {
+        glTextureParameteri(_handle.get(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(_handle.get(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
 } // namespace OM3D

@@ -47,7 +47,8 @@ namespace OM3D
 
         Texture(const TextureData &data);
 
-        Texture(const glm::uvec2 &size, ImageFormat format, WrapMode wrap, std::optional<std::string> name = std::nullopt);
+        Texture(const glm::uvec2 &size, ImageFormat format, WrapMode wrap,
+                std::optional<std::string> name = std::nullopt);
 
         static Texture empty_cubemap(u32 size, ImageFormat format,
                                      u32 mipmaps = 1);
@@ -66,6 +67,7 @@ namespace OM3D
 
         static u32 mip_levels(glm::uvec2 size);
         void activate_compare_mode(GLint compare_function) const;
+        void deactivate_filter() const;
 
     private:
         friend class Framebuffer;
