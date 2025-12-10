@@ -29,7 +29,7 @@ void main() {
     float depth = texelFetch(in_depth, ivec2(gl_FragCoord.xy), 0).r;
 
     vec3 acc = vec3(0.0);
-    vec3 in_position = unproject(in_uv, gl_FragDepth, frame.camera.inv_view_proj);
+    vec3 in_position = unproject(in_uv, depth, frame.camera.inv_view_proj);
 
     const vec3 to_view = (frame.camera.position - in_position);
     const vec3 view_dir = normalize(to_view);
