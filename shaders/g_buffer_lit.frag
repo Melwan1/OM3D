@@ -34,9 +34,9 @@ void main() {
     const vec3 to_view = (frame.camera.position - in_position);
     const vec3 view_dir = normalize(to_view);
 
-    acc += eval_ibl(in_envmap, brdf_lut, normal_metalness.rgb, view_dir, albedo_roughness.rgb, normal_metalness.a, albedo_roughness.a) * frame.ibl_intensity;
+    acc += eval_ibl(in_envmap, brdf_lut, 2 * normal_metalness.rgb - 1, view_dir, albedo_roughness.rgb, normal_metalness.a, albedo_roughness.a) * frame.ibl_intensity;
     {
-        vec3 current_color = frame.sun_color * eval_brdf(normal_metalness.rgb, view_dir, frame.sun_dir, albedo_roughness.rgb, normal_metalness.a, albedo_roughness.a);
+        vec3 current_color = frame.sun_color * eval_brdf(2 * normal_metalness.rgb - 1, view_dir, frame.sun_dir, albedo_roughness.rgb, normal_metalness.a, albedo_roughness.a);
 
         float shadow_coeff = get_shadow_coefficient(in_position, in_shadow, frame.shadow_camera.view_proj);
         current_color *= shadow_coeff;// avoid black shadows
