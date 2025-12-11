@@ -635,8 +635,8 @@ int main(int argc, char **argv)
                 {
                     PROFILE_GPU("Z-Prepass");
                     renderer.depth_framebuffer.bind(true, false);
-                    scene->render(PassType::DEPTH);
                     default_white_texture()->bind(6);
+                    scene->render(PassType::DEPTH);
                 }
                 {
                     PROFILE_GPU("Shadow Pass");
