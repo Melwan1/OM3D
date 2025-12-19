@@ -32,6 +32,7 @@ namespace OM3D
         const glm::mat3 &rotation() const;
 
         const StaticMesh &get_static_mesh() const;
+        Material * get_material();
 
     private:
         glm::mat4 _transform = glm::mat4(1.0f);

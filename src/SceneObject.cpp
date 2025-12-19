@@ -26,7 +26,12 @@ namespace OM3D
         {
             _material->set_depth_test_mode(DepthTestMode::Equal);
         }
-        _material->bind(backface_culling, g_buffer_pass);
+        if (backface_culling)
+        {
+            _material->set_cull_mode(CullMode::Backface_Cull);
+        }
+
+        _material->bind(g_buffer_pass);
         _material->set_depth_test_mode(original_depth_test_mode);
 
         _mesh->draw(camera, frustum, scale(), translation());
@@ -81,6 +86,11 @@ namespace OM3D
     const StaticMesh &SceneObject::get_static_mesh() const
     {
         return *_mesh;
+    }
+
+    Material *SceneObject::get_material()
+    {
+        return _material.get();
     }
 
 } // namespace OM3D

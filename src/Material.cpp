@@ -39,6 +39,22 @@ namespace OM3D
         _double_sided = double_sided;
     }
 
+    void Material::set_program_enum(ProgramEnum program_enum)
+    {
+        _program = program_enum;
+    }
+
+    void Material::set_no_depth_contribution(bool no_depth_contribution)
+    {
+        _no_depth_contribution = no_depth_contribution;
+    }
+
+    void Material::set_cull_mode(CullMode cull_mode)
+    {
+        _cull_mode = cull_mode;
+    }
+
+
     void Material::set_texture(u32 slot, std::shared_ptr<Texture> tex)
     {
         if (const auto it =
@@ -72,19 +88,29 @@ namespace OM3D
         _uniforms.emplace_back(name_hash, std::move(value));
     }
 
-    void Material::bind(const bool backface_culling, bool g_buffer_pass) const
+    void Material::bind(bool g_buffer_pass) const
     {
         switch (_blend_mode)
         {
         case BlendMode::None:
             glDisable(GL_BLEND);
 
-            if (backface_culling)
+            if (_cull_mode != CullMode::None)
             {
                 // Enable back_face culling when the object is not transparent
                 glEnable(GL_CULL_FACE);
-                glCullFace(GL_BACK);
+                if (_cull_mode == CullMode::FrontFace_Cull)
+                {
+                    glCullFace(GL_FRONT);
+                }
+                else
+                {
+                    glCullFace(GL_BACK);
+                }
                 glFrontFace(GL_CCW);
+            } else
+            {
+                glDisable(GL_CULL_FACE);
             }
             break;
 
@@ -92,11 +118,18 @@ namespace OM3D
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            if (backface_culling)
-            {
-                // Disable back_face culling when the object is transparent
-                glDisable(GL_CULL_FACE);
-            }
+            // Disable back_face culling when the object is transparent
+            glDisable(GL_CULL_FACE);
+            break;
+
+        case BlendMode::Additive:
+            // TODO: idk additive
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ZERO);
+            // maybe: glBlendFunc(GL_ONE, GL_ONE);
+
+            // Disable back_face culling when the object is transparent
+            // glDisable(GL_CULL_FACE);
             break;
         }
 
@@ -124,6 +157,15 @@ namespace OM3D
             break;
         }
 
+        if (_no_depth_contribution)
+        {
+            glDepthMask(GL_FALSE);
+        }
+        else
+        {
+            glDepthMask(GL_TRUE);
+        }
+
         for (const auto &texture : _textures)
         {
             texture.second->bind(texture.first);
@@ -140,6 +182,8 @@ namespace OM3D
                 _main_program->set_uniform(h, v);
             }
         }
+
+
         if (g_buffer_pass)
         {
             _g_buffer_program->bind();

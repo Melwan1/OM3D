@@ -7,6 +7,7 @@ namespace OM3D
     {
         DEPTH = 0,
         MAIN_G_BUFFER,
+        POINT_LIGHT_G_BUFFER,
         MAIN_TRANSPARENT,
         MAIN,
         SHADOW,

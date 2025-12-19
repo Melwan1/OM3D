@@ -25,12 +25,14 @@ namespace OM3D
 
         void add_object(SceneObject obj);
         void add_light(PointLight obj);
+        SceneObject &get_first_scene_object();
 
         Span<const SceneObject> objects() const;
         Span<const PointLight> point_lights() const;
 
         Camera &camera();
         const Camera &camera() const;
+        void set_camera(const Camera &camera);
 
         void set_envmap(std::shared_ptr<Texture> env);
         void set_ibl_intensity(float intensity);

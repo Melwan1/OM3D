@@ -1,8 +1,8 @@
+#include "Scene.h"
+
 #include <TypedBuffer.h>
 #include <iostream>
 #include <shader_structs.h>
-
-#include "Scene.h"
 
 namespace OM3D
 {
@@ -27,6 +27,11 @@ namespace OM3D
         _point_lights.emplace_back(std::move(obj));
     }
 
+    SceneObject &Scene::get_first_scene_object()
+    {
+        return _objects.front();
+    }
+
     Span<const SceneObject> Scene::objects() const
     {
         return _objects;
@@ -45,6 +50,11 @@ namespace OM3D
     const Camera &Scene::camera() const
     {
         return _camera;
+    }
+
+    void Scene::set_camera(const Camera &camera)
+    {
+        _camera = camera;
     }
 
     void Scene::set_envmap(std::shared_ptr<Texture> env)
@@ -166,16 +176,20 @@ namespace OM3D
         // Bind brdf lut needed for lighting to scene rendering shaders
         brdf_lut().bind(5);
 
-        if (pass_type == PassType::MAIN_G_BUFFER)
+        if (pass_type == PassType::MAIN_G_BUFFER
+            || pass_type == PassType::DEBUG)
         {
             draw_full_screen_triangle();
             return;
         }
 
         // Render the sky
-        _sky_material.bind(false);
-        _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
-        draw_full_screen_triangle();
+        if (pass_type != PassType::POINT_LIGHT_G_BUFFER)
+        {
+            _sky_material.bind();
+            _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
+            draw_full_screen_triangle();
+        }
 
         Frustum frustum = camera().build_frustum();
         frustum._culling_enabled = _frustum_culling;
@@ -183,9 +197,11 @@ namespace OM3D
             _frustum_bounding_sphere_radius_coeff;
 
         bool after_z_prepass = pass_type == PassType::MAIN_G_BUFFER;
+        bool backface_culling =
+            _backface_culling && pass_type != PassType::POINT_LIGHT_G_BUFFER;
+        bool g_buffer_pass = pass_type == PassType::G_BUFFER;
 
         // Render every object
-
         {
             // Opaque first
             if (pass_type != PassType::MAIN_TRANSPARENT)
@@ -195,8 +211,7 @@ namespace OM3D
                     if (obj.material().is_opaque())
                     {
                         obj.render(camera(), frustum, after_z_prepass,
-                                   _backface_culling,
-                                   pass_type == PassType::G_BUFFER);
+                                   backface_culling, g_buffer_pass);
                     }
                 }
             }
@@ -207,7 +222,7 @@ namespace OM3D
                 if (!obj.material().is_opaque())
                 {
                     obj.render(camera(), frustum, after_z_prepass,
-                               _backface_culling, false);
+                               backface_culling, g_buffer_pass);
                 }
             }
         }

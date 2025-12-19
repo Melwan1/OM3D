@@ -596,7 +596,30 @@ int main(int argc, char **argv)
     auto debug_program = Program::from_files("debug.frag", "screen.vert");
     auto main_g_buffer_program =
         Program::from_files("g_buffer_lit.frag", "screen.vert");
+    auto point_light_g_buffer_program =
+        Program::from_files("point_light_shading.frag", "basic.vert");
     RendererState renderer;
+
+    std::string sphere_path = std::string(data_path) + "sphere.glb";
+    auto sphere_scene = Scene::from_gltf(sphere_path);
+    Material *sphere_material;
+
+    if (sphere_scene.is_ok)
+    {
+        sphere_material =
+            sphere_scene.value->get_first_scene_object().get_material();
+        sphere_material->set_no_depth_contribution(true);
+        sphere_material->set_cull_mode(CullMode::FrontFace_Cull);
+        sphere_material->set_depth_test_mode(DepthTestMode::Standard);
+        sphere_material->set_blend_mode(BlendMode::Alpha);
+        sphere_material->set_main_program(point_light_g_buffer_program);
+        // sphere_material->set_stored_uniform(HASH("light_id"), static_cast<u64>(0));
+    }
+    else
+    {
+        std::cerr << "Failed to load " << sphere_path << std::endl;
+        return 1;
+    }
 
     for (;;)
     {
@@ -669,7 +692,7 @@ int main(int argc, char **argv)
                     renderer.depth_texture.bind(2);
                     renderer.shadow_depth_texture.bind(6);
 
-                    scene->render(PassType::MAIN_G_BUFFER);
+                    scene->render(PassType::DEBUG);
                 }
                 else
                 {
@@ -701,6 +724,47 @@ int main(int argc, char **argv)
                     renderer.shadow_depth_texture.bind(6);
 
                     scene->render(PassType::MAIN_G_BUFFER);
+
+                    PROFILE_GPU("Point Light Shading G-Buffer");
+
+                    renderer.main_framebuffer.bind(false, false);
+                    sphere_scene.value->set_camera(scene->camera());
+                    renderer.albedo_roughness_texture.bind(4);
+                    renderer.normal_metalness_texture.bind(5);
+                    renderer.depth_texture.bind(6);
+
+                    static bool one_time_please = true;
+                    for (size_t light_id = 0;
+                         light_id < scene->point_lights().size(); light_id++)
+                    {
+                        // sphere_material->set_uniform(HASH("light_id"),
+                        //                              light_id);
+                        // point_light_g_buffer_program->set_uniform(
+                        //     HASH("light_id"), light_id);
+
+                        auto translation =
+                            scene->point_lights()[light_id].position();
+                        auto scale = scene->point_lights()[light_id].radius();
+
+                        if (one_time_please)
+                        {
+                            std::cout << "light : " << light_id << ",  "
+                                  << translation.x << " " << translation.y
+                                  << " " << translation.z
+                                  << ", scale: " << scale << "\n";
+                        }
+
+                        auto transform =
+                            glm::translate(glm::mat4(1.0f), translation)
+                            * glm::scale(glm::mat4(1.0f),
+                                         glm::vec3(scale));
+
+                        sphere_scene.value->get_first_scene_object()
+                            .set_transform(transform);
+                        sphere_scene.value->render(
+                            PassType::POINT_LIGHT_G_BUFFER);
+                    }
+                    one_time_please = false;
 
                     // PROFILE_GPU("Main Pass Forward (Transparent)");
                     // renderer.main_framebuffer.bind(false, false);
