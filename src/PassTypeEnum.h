@@ -5,7 +5,7 @@ namespace OM3D
 
     enum PassType
     {
-        DEPTH = 0,
+        DEPTH_PREPASS = 0,
         MAIN_G_BUFFER,
         POINT_LIGHT_G_BUFFER,
         MAIN_TRANSPARENT,

@@ -184,7 +184,8 @@ namespace OM3D
         }
 
         // Render the sky
-        if (pass_type != PassType::POINT_LIGHT_G_BUFFER)
+        if (pass_type != PassType::POINT_LIGHT_G_BUFFER
+            && pass_type != PassType::MAIN_TRANSPARENT)
         {
             _sky_material.bind();
             _sky_material.set_uniform(HASH("intensity"), _ibl_intensity);
@@ -196,10 +197,9 @@ namespace OM3D
         frustum._culling_bounding_sphere_coeff =
             _frustum_bounding_sphere_radius_coeff;
 
-        bool after_z_prepass = pass_type == PassType::MAIN_G_BUFFER;
-        bool backface_culling =
-            _backface_culling && pass_type != PassType::POINT_LIGHT_G_BUFFER;
-        bool g_buffer_pass = pass_type == PassType::G_BUFFER;
+        bool backface_culling = _backface_culling
+            && pass_type != PassType::POINT_LIGHT_G_BUFFER
+            && pass_type != PassType::MAIN_TRANSPARENT;
 
         // Render every object
         {
@@ -210,8 +210,8 @@ namespace OM3D
                 {
                     if (obj.material().is_opaque())
                     {
-                        obj.render(camera(), frustum, after_z_prepass,
-                                   backface_culling, g_buffer_pass);
+                        obj.render(camera(), frustum, backface_culling,
+                                   pass_type);
                     }
                 }
             }
@@ -221,8 +221,7 @@ namespace OM3D
             {
                 if (!obj.material().is_opaque())
                 {
-                    obj.render(camera(), frustum, after_z_prepass,
-                               backface_culling, g_buffer_pass);
+                    obj.render(camera(), frustum, backface_culling, pass_type);
                 }
             }
         }

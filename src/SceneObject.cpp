@@ -10,9 +10,8 @@ namespace OM3D
     {}
 
     void SceneObject::render(const Camera &camera, const Frustum &frustum,
-                             const bool after_z_prepass,
                              const bool backface_culling,
-                             const bool g_buffer_pass) const
+                             PassType pass_type) const
     {
         if (!_material || !_mesh)
         {
@@ -22,16 +21,20 @@ namespace OM3D
         _material->set_uniform(HASH("model"), transform());
         DepthTestMode original_depth_test_mode =
             _material->get_depth_test_mode();
-        if (after_z_prepass)
+
+        if (pass_type != PassType::DEPTH_PREPASS
+            && pass_type != PassType::POINT_LIGHT_G_BUFFER
+            && pass_type != PassType::MAIN_NO_DEPTH)
         {
             _material->set_depth_test_mode(DepthTestMode::Equal);
         }
+
         if (backface_culling)
         {
             _material->set_cull_mode(CullMode::Backface_Cull);
         }
 
-        _material->bind(g_buffer_pass);
+        _material->bind(pass_type == PassType::G_BUFFER);
         _material->set_depth_test_mode(original_depth_test_mode);
 
         _mesh->draw(camera, frustum, scale(), translation());

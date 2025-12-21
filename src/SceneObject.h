@@ -6,6 +6,8 @@
 #include <glm/matrix.hpp>
 #include <memory>
 
+#include "PassTypeEnum.h"
+
 namespace OM3D
 {
 
@@ -16,8 +18,7 @@ namespace OM3D
                     std::shared_ptr<Material> material = nullptr);
 
         void render(const Camera &camera, const Frustum &frustum,
-                    bool after_z_prepass, bool backface_culling,
-                    bool g_buffer_pass) const;
+                    bool backface_culling, PassType pass_type) const;
 
         const Material &material() const;
 
@@ -32,7 +33,7 @@ namespace OM3D
         const glm::mat3 &rotation() const;
 
         const StaticMesh &get_static_mesh() const;
-        Material * get_material();
+        Material *get_material();
 
     private:
         glm::mat4 _transform = glm::mat4(1.0f);

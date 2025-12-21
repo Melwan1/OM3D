@@ -49,56 +49,62 @@ layout(binding = 1) buffer PointLights {
 void main() {
     const vec3 normal_map = unpack_normal_map(texture(in_normal_texture, in_uv).xy);
     const vec3 normal = normal_map.x * in_tangent +
-                        normal_map.y * in_bitangent +
-                        normal_map.z * in_normal;
+    normal_map.y * in_bitangent +
+    normal_map.z * in_normal;
 
     const vec4 albedo_tex = texture(in_texture, in_uv);
     const vec3 base_color = in_color.rgb * albedo_tex.rgb * base_color_factor;
     const float alpha = albedo_tex.a;
 
     #ifdef ALPHA_TEST
-        if(alpha <= alpha_cutoff) {
-            discard;
-        }
+    if (alpha <= alpha_cutoff) {
+        discard;
+    }
     #endif
 
     const vec4 metal_rough_tex = texture(in_metal_rough, in_uv);
-    const float roughness = metal_rough_tex.g * metal_rough_factor.y; // as per glTF spec
-    const float metallic = metal_rough_tex.b * metal_rough_factor.x; // as per glTF spec
+    const float roughness = metal_rough_tex.g * metal_rough_factor.y;// as per glTF spec
+    const float metallic = metal_rough_tex.b * metal_rough_factor.x;// as per glTF spec
 
 
     const vec3 to_view = (frame.camera.position - in_position);
     const vec3 view_dir = normalize(to_view);
 
     vec3 acc = texture(in_emissive, in_uv).rgb * emissive_factor;
+    // Not really the albedo but it will do
+    vec3 albedo = acc + base_color;
+
+    #ifndef G_BUFFER_RENDER
     acc += eval_ibl(in_envmap, brdf_lut, normal, view_dir, base_color, metallic, roughness) * frame.ibl_intensity;
     {
         vec3 current_color = frame.sun_color * eval_brdf(normal, view_dir, frame.sun_dir, base_color, metallic, roughness);
 
         float shadow_coeff = get_shadow_coefficient(in_position, in_shadow, frame.shadow_camera.view_proj);
-        current_color *= shadow_coeff; // avoid black shadows
+        current_color *= shadow_coeff;// avoid black shadows
         acc += current_color;
 
-        for(uint i = 0; i != frame.point_light_count; ++i) {
+        for (uint i = 0; i != frame.point_light_count; ++i) {
             PointLight light = point_lights[i];
             const vec3 to_light = (light.position - in_position);
             const float dist = length(to_light);
             const vec3 light_vec = to_light / dist;
 
             const float att = attenuation(dist, light.radius);
-            if(att <= 0.0f) {
+            if (att <= 0.0f) {
                 continue;
             }
 
             acc += eval_brdf(normal, view_dir, light_vec, base_color, metallic, roughness) * att * light.color;
         }
     }
-#ifdef G_BUFFER_RENDER
-    albedo_roughness = vec4(base_color, roughness);
+    #endif
+
+    #ifdef G_BUFFER_RENDER
+    albedo_roughness = vec4(albedo, roughness);
     normal_metalness = vec4(normal * 0.5 + 0.5, metallic);
-#else
+    #else
     out_color = vec4(acc, alpha);
-#endif
+    #endif
 
 //#ifdef DEBUG_NORMAL
 //    out_color = vec4(normal * 0.5 + 0.5, 1.0);

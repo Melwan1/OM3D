@@ -653,7 +653,7 @@ int main(int argc, char **argv)
                     PROFILE_GPU("Z-Prepass");
                     renderer.depth_framebuffer.bind(true, false);
                     default_white_texture()->bind(6);
-                    scene->render(PassType::DEPTH);
+                    scene->render(PassType::DEPTH_PREPASS);
                 }
                 {
                     PROFILE_GPU("Shadow Pass");
@@ -771,9 +771,9 @@ int main(int argc, char **argv)
                     }
 
                     {
-                        // PROFILE_GPU("Main Pass Forward (Transparent)");
-                        // renderer.main_framebuffer.bind(false, false);
-                        // scene->render(PassType::MAIN_TRANSPARENT);
+                        PROFILE_GPU("Main Pass Forward (Transparent)");
+                        renderer.main_framebuffer.bind(false, false);
+                        scene->render(PassType::MAIN_TRANSPARENT);
                     }
                 }
             }

@@ -84,7 +84,7 @@ void main() {
 
     #ifdef DEBUG_COLORMAP
     // visualize the lights area with distinct colors
-    out_color = vec4(color_map[light_id % COLOR_NUMBER] / 5, 0.0);
+    out_color = vec4(color_map[light_id % COLOR_NUMBER] / 8, 0.0);
     #else
     out_color = vec4(acc, 0.0);
     #endif
