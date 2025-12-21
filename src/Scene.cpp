@@ -263,4 +263,14 @@ namespace OM3D
         return { average_position, std::sqrt(squared_scene_radius) };
     }
 
+    void Scene::set_point_lights(const std::vector<PointLight> &point_lights)
+    {
+        _point_lights = point_lights;
+    }
+
+    std::vector<PointLight> &Scene::get_point_lights()
+    {
+        return _point_lights;
+    }
+
 } // namespace OM3D

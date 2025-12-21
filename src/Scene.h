@@ -43,6 +43,8 @@ namespace OM3D
                                  float frustum_bounding_sphere_radius_coeff);
 
         std::pair<glm::vec3, float> get_scene_center_and_radius();
+        void set_point_lights(const std::vector<PointLight> &point_lights);
+        std::vector<PointLight> &get_point_lights();
 
     private:
         std::vector<SceneObject> _objects;

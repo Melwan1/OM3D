@@ -710,7 +710,6 @@ int main(int argc, char **argv)
                         PROFILE_GPU("Point Light Shading G-Buffer");
 
                         renderer.main_framebuffer.bind(false, false);
-                        sphere_scene.value->set_camera(scene->camera());
                         renderer.albedo_roughness_texture.bind(7);
                         renderer.normal_metalness_texture.bind(8);
                         renderer.depth_texture.bind(9);
@@ -725,6 +724,15 @@ int main(int argc, char **argv)
                             sphere_material->set_main_program(
                                 point_light_g_buffer_program);
                         }
+
+                        sphere_material->get_program()->bind();
+                        sphere_scene.value->set_camera(scene->camera());
+                        // sphere_scene.value->camera().set_proj(scene->camera().projection_matrix());
+                        // sphere_scene.value->camera().set_view(scene->camera().view_matrix());
+                        // sphere_scene.value->camera().update();
+
+                        // Don't forget to give the point lights to the sphere scene !
+                        sphere_scene.value->set_point_lights(scene->get_point_lights());
 
                         static bool one_time_please = true;
                         for (unsigned light_id = 0;

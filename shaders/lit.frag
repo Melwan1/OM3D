@@ -94,7 +94,7 @@ void main() {
         }
     }
 #ifdef G_BUFFER_RENDER
-    albedo_roughness = vec4(albedo_tex.rgb, roughness);
+    albedo_roughness = vec4(base_color, roughness);
     normal_metalness = vec4(normal * 0.5 + 0.5, metallic);
 #else
     out_color = vec4(acc, alpha);

@@ -18,6 +18,7 @@ layout(location = 2) in vec3 in_color;
 layout(location = 3) in vec3 in_position;
 layout(location = 4) in vec3 in_tangent;
 layout(location = 5) in vec3 in_bitangent;
+layout(location = 6) in vec2 in_screen_uv;
 
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
@@ -59,11 +60,12 @@ void main() {
     normal_map.y * in_bitangent +
     normal_map.z * in_normal;
 
-    vec4 albedo_roughness = texelFetch(in_albedo_roughness, ivec2(gl_FragCoord.xy), 0);
-    vec4 normal_metalness = texelFetch(in_normal_metal, ivec2(gl_FragCoord.xy), 0);
-    float depth = texelFetch(in_depth, ivec2(gl_FragCoord.xy), 0).r;
+    ivec2 pixel_coord = ivec2(gl_FragCoord.xy);
+    vec4 albedo_roughness = texelFetch(in_albedo_roughness, pixel_coord, 0);
+    vec4 normal_metalness = texelFetch(in_normal_metal, pixel_coord, 0);
+    float depth           = texelFetch(in_depth, pixel_coord, 0).r;
 
-    vec3 position = unproject(ivec2(gl_FragCoord.xy), depth, frame.camera.inv_view_proj);
+    vec3 position = unproject(in_screen_uv, depth, frame.camera.inv_view_proj);
 
     const vec3 to_view = (frame.camera.position - position);
     const vec3 view_dir = normalize(to_view);
@@ -78,13 +80,12 @@ void main() {
         discard;
     }
 
-    vec3 acc = eval_brdf(normal_metalness.rgb, view_dir, light_vec, albedo_roughness.rgb, normal_metalness.a, albedo_roughness.a) * att * light.color;
+    vec3 acc = eval_brdf((normal_metalness.rgb - 0.5) * 2.0, view_dir, light_vec, albedo_roughness.rgb, normal_metalness.a, albedo_roughness.a) * att * light.color;
 
     #ifdef DEBUG_COLORMAP
-        // visualize the lights area with distinct colors
-        out_color = vec4(color_map[light_id % COLOR_NUMBER] / 3, 0.0);
+    // visualize the lights area with distinct colors
+    out_color = vec4(color_map[light_id % COLOR_NUMBER] / 5, 0.0);
     #else
-        out_color = vec4(acc, 0.0);
+    out_color = vec4(acc, 0.0);
     #endif
-
 }
