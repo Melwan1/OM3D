@@ -4,7 +4,7 @@ namespace OM3D
 {
 
     static const char *debug_mode_items[]{
-        "None", "Depth", "Albedo", "Normals", "Roughness", "Metalness"
+        "None", "Depth", "Albedo", "Normals", "Roughness", "Metalness", "Point Light Colormap"
     };
 
     enum DebugMode
@@ -15,6 +15,7 @@ namespace OM3D
         DEBUG_NORMAL = 3,
         DEBUG_ROUGHNESS = 4,
         DEBUG_METALNESS = 5,
+        DEBUG_POINT_LIGHT_COLORMAP = 6,
     };
 
     inline std::string debug_mode_to_string(const DebugMode mode)
@@ -33,6 +34,8 @@ namespace OM3D
             return "DEBUG_ROUGHNESS";
         case DEBUG_METALNESS:
             return "DEBUG_METALNESS";
+        case DEBUG_POINT_LIGHT_COLORMAP:
+            return "DEBUG_POINT_LIGHT_COLORMAP";
         }
         return "";
     }

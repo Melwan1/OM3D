@@ -74,6 +74,7 @@ namespace OM3D
         }
 
         void bind(bool g_buffer_pass = false) const;
+        Program* get_program() const;
 
         static Material textured_pbr_material(bool alpha_test = false);
 

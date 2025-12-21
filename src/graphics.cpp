@@ -199,6 +199,10 @@ namespace OM3D
 
     void draw_full_screen_triangle()
     {
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+
         if (audit_bindings_before_draw)
         {
             audit_bindings();

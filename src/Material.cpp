@@ -54,7 +54,6 @@ namespace OM3D
         _cull_mode = cull_mode;
     }
 
-
     void Material::set_texture(u32 slot, std::shared_ptr<Texture> tex)
     {
         if (const auto it =
@@ -90,28 +89,27 @@ namespace OM3D
 
     void Material::bind(bool g_buffer_pass) const
     {
+        switch (_cull_mode)
+        {
+        case CullMode::None:
+            glDisable(GL_CULL_FACE);
+            break;
+        case CullMode::Backface_Cull:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            glFrontFace(GL_CCW);
+            break;
+        case CullMode::FrontFace_Cull:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            glFrontFace(GL_CCW);
+            break;
+        }
+
         switch (_blend_mode)
         {
         case BlendMode::None:
             glDisable(GL_BLEND);
-
-            if (_cull_mode != CullMode::None)
-            {
-                // Enable back_face culling when the object is not transparent
-                glEnable(GL_CULL_FACE);
-                if (_cull_mode == CullMode::FrontFace_Cull)
-                {
-                    glCullFace(GL_FRONT);
-                }
-                else
-                {
-                    glCullFace(GL_BACK);
-                }
-                glFrontFace(GL_CCW);
-            } else
-            {
-                glDisable(GL_CULL_FACE);
-            }
             break;
 
         case BlendMode::Alpha:
@@ -125,10 +123,10 @@ namespace OM3D
         case BlendMode::Additive:
             // TODO: idk additive
             glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ZERO);
+            // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunc(GL_ONE, GL_ONE);
             // maybe: glBlendFunc(GL_ONE, GL_ONE);
 
-            // Disable back_face culling when the object is transparent
             // glDisable(GL_CULL_FACE);
             break;
         }
@@ -183,7 +181,6 @@ namespace OM3D
             }
         }
 
-
         if (g_buffer_pass)
         {
             _g_buffer_program->bind();
@@ -192,6 +189,11 @@ namespace OM3D
         {
             _main_program->bind();
         }
+    }
+
+    Program *Material::get_program() const
+    {
+        return _main_program.get();
     }
 
     Material Material::textured_pbr_material(bool alpha_test)
